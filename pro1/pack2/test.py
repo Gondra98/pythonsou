@@ -184,7 +184,7 @@ while True:
     if i > 100: 
         break
     print(i, end=' ')
-    continue
+    i += 1
 
 
 # 문제14

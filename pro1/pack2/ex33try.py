@@ -31,3 +31,4 @@ finally:
     print('에러 유무에 상관없이 반드시 수행됨')
 
 print('end')
+print('종료')
