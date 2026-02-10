@@ -21,6 +21,7 @@ s = 'bequence'
 print(s, id(s))
 
 print('---' * 10)
+
 #2) List : 다양한 종류의 자료 묶음형. 순서O, 수정O, 중복O
 a = [1, 2, 3]
 print(a, a[0], a[0:2])
