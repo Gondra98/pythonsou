@@ -6,20 +6,17 @@
     <title>Document</title>
     <script>
         window.onload = () => {
-            document.querySelector("#btnGet").onclick = getFunc;
-            document.querySelector("#btnPost").onclick = postFunc;
+            document.querySelector('#btnGet').onclick = getFunc;
+            document.querySelector('#btnPost').onclick = postFunc;
         }
-
         let xhr;
-
         function getFunc(){
             let irum = frm.name.value;
             let nai = frm.age.value;
-            // alert(irum + " " + nai);
-
-            xhr = new XMLHttpRequest();     // 서버와 Ajax 통신용 클래스
-            let fname = "js.py?irum=" + irum + "&nai=" + nai;
-            xhr.open("GET", fname, true);       // true: 비동기, false:동기
+            xhr = new XMLHttpRequest();         // server와 ajax 통신용 클래스 역할
+            let fname = "js16.py?irum="+irum+"&nai="+nai;
+            // 임시 방편용 js16.py 작성 (이것은 처리 후 json으로 반환한다 가정)
+            xhr.open("GET", fname, true);       // true 비동기 방식 , false 동기 방식
             xhr.onreadystatechange = function(){
                 if(xhr.readyState === 4 && xhr.status === 200){
                     process1();
@@ -27,19 +24,29 @@
             }
             xhr.send();
         }
-
+        function postFunc(){
+            let irum = frm.name.value;
+            let nai = frm.age.value;
+            xhr = new XMLHttpRequest();         // server와 ajax 통신용 클래스 역할
+            let fname = "js16.py";
+            // 임시 방편용 js16.py 작성 (이것은 처리 후 json으로 반환한다 가정)
+            xhr.open("POST", fname, true);       // true 비동기 방식 , false 동기 방식
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState === 4 && xhr.status === 200){
+                    process1();
+                }
+            }
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send("?irum=" + irum + "&nai=" + nai);      // body 영역에 포함되어 전송(대용량 전송이 가능하다)
+        }
         function process1(){
             alert(xhr.responseText);
         }
-
-        function process1(){
-
-        }
-
     </script>
 </head>
 <body>
     <h2>Ajax 이해 : get, post</h2>
+    <br>●'◡'● Ajax는 비동기 HTTP 통신 ●'◡'●
     <form name="frm">
         이름 : <input type="text" name="name" value="tom"><br>
         나이 : <input type="text" name="age" value="33"><br>
