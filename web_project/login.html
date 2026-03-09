@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:40px;
+}
+
+form{
+    width:300px;
+}
+
+label{
+    display:block;
+    margin-top:10px;
+}
+
+input{
+    width:100%;
+    padding:8px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>로그인</h2>
+
+<form action="/login" method="post">
+
+<label>ID</label>
+<input type="text" name="login_id" required>
+
+<label>PW</label>
+<input type="password" name="password" required>
+
+<button type="submit">로그인</button>
+
+</form>
+
+</body>
+</html>
