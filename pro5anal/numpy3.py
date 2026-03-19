@@ -11,7 +11,7 @@ print(bb)
 cc = np.r_[aa, [aa[2]]]     # 2행과 동일한 행 추가
 print(cc)
 
-print('--append, insert, delete ---')
+print('--- append, insert, delete ---')
 a = np.array([1,2,3])
 print(a)
 b = np.append(a, [4, 5])
