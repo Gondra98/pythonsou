@@ -93,3 +93,8 @@ sns.regplot(x='temp', y='count', data=train, ax=ax1)
 sns.regplot(x='humidity', y='count', data=train, ax=ax2)
 sns.regplot(x='windspeed', y='count', data=train, ax=ax3)
 plt.show()
+
+
+
+
+
