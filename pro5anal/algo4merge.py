@@ -40,3 +40,23 @@ def merge_sort(a):
 
 d = [6, 8, 3, 1, 2, 4, 7, 5]
 print(merge_sort(d))
+
+print()
+# 방법2 : 일반 알고리즘
+# 재귀호출이 정렬된 리스트를 반환.
+# 병합도 새 리스트를 만들어 반환.
+# 원본 리스트는 그대로이고 정렬된 결과는 새리스트에 저장
+
+def merge_sort2(a):
+    if len(a) <= 1:
+        return a
+    
+    mid = len(a) // 2
+    left = merge_sort2(a[:mid])
+    right = merge_sort2(a[mid:])
+
+d = [6,8,3,1,2,4,7,5]
+sorted_d = merge_sort2(d)
+print(sorted_d)
+
+
