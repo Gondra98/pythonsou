@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import scipy.stats as stats
 data = [4, 6, 17, 16, 8, 9]     # 각 눈금에 대한 관측 빈도수
