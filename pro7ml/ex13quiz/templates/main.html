@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {padding: 30px;}
+        .menu{
+            display: flex;
+            flex-direction: column;
+            gap:10px;
+            width:200px;
+        }
+        .menu a{
+            text-decoration: none;
+            padding: 5px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            text-align: center;
+            background-color: #f2f2f2; color: black;
+        }
+        .menu a:hover{background-color: #333; color: white;}
+
+        /* 결과 박스 */
+        #result-box {
+            display: none;
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            padding: 12px 16px;
+            margin-top: 20px;
+            width: fit-content;
+            line-height: 2;
+        }
+
+        /* 직급별 평균 테이블 */
+        #table-box {
+            display: none;
+            margin-top: 30px;
+        }
+        #table-box h3 {
+            margin-bottom: 10px;
+        }
+        #avg-table {
+            border-collapse: collapse;
+            width: 300px;
+        }
+        #avg-table th, #avg-table td {
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            text-align: left;
+        }
+        #avg-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h2>근무년수 → 예상연봉(Linear Regression)</h2>
+    근무년수:
+    <input type="number" id="years" placeholder="근무년수 입력하세요"/>
+    <button onclick="predict()">확인</button>
+
+    <!-- 결과 박스 -->
+    <div id="result-box">
+        <div>예상연봉액 : <b id="salary"></b></div>
+        <div>설명력(R²) : <b id="r2"></b></div>
+        <div id="formula"></div>
+    </div>
+
+    <!-- 직급별 평균 테이블 -->
+    <div id="table-box">
+        <h3>직급별 연봉평균</h3>
+        <table id="avg-table">
+            <thead>
+                <tr><th>직급</th><th>평균 연봉</th></tr>
+            </thead>
+            <tbody id="avg-tbody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function predict() {
+            const years = document.getElementById("years").value;
+
+            if (!years) {
+                alert("근무년수를 입력하세요!");
+                return;
+            }
+
+            const response = await fetch("/api/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ years: years })
+            });
+
+            const data = await response.json();
+
+            // 결과 박스 표시
+            document.getElementById("salary").innerText = data.salary;
+            document.getElementById("r2").innerText = data.r2 + "%";
+            document.getElementById("formula").innerText
+                = `회귀식 : pay = ${data.coef} * years + ${data.intercept}`;
+            document.getElementById("result-box").style.display = "block";
+
+            // 직급별 평균 테이블 표시
+            const tbody = document.getElementById("avg-tbody");
+            tbody.innerHTML = "";
+            data.avg_by_rank.forEach(row => {
+                tbody.innerHTML +=
+                    `<tr><td>${row.직급}</td><td>${row.평균연봉.toLocaleString()}</td></tr>`;
+            });
+            document.getElementById("table-box").style.display = "block";
+        }
+    </script>
+</body>
+</html>
