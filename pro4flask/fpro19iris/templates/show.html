@@ -6,14 +6,11 @@
     <title>Document</title>
 </head>
 <body>
-    <h2>붓꽃 정보</h2>
+    <h2>iris data</h2>
     <div>
-        {{table | safe}}
+        {{ table | safe }}
     </div>
-    <h3>종별 건수 파이 차트</h3>
-    <img src="{{url_for('static', filename=img_path)}}" alt="iris pie chart" style="width: 50%;">
-
-    
-
+    <h3>종별 건수 pie chart</h3>
+    <img src="{{ url_for('static', filename=img_path) }}" alt="iris pie chart" style="width:50%">
 </body>
 </html>
