@@ -117,11 +117,14 @@ num = int(input("소득 수준 입력:"))
 new_df = pd.DataFrame()
 new_df['소득수준'] = [num]
 print(new_df)
+
+# logit()모델
 new_pred = result.predict(new_df)
 print(new_pred.values)
 print('예측 결과 : ', np.around(new_pred.values)) 
 
-
+# glm()모델
 new_pred2 = result2.predict(new_df)
 print(new_pred2.values)
-print('예측 결과 : ', np.around(new_pred.values)) 
+print('예측 결과 : ', np.around(new_pred2.values)) 
+
