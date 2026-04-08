@@ -140,5 +140,3 @@ print(newdf)
 new_pred = result2.predict(newdf)
 print('예측 결과 : ', np.around(new_pred.values))   # [0. 1. 1. 1.]
 print('예측 결과 : ', np.rint(new_pred.values))     # [0. 1. 1. 1.]
-
-
