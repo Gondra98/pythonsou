@@ -197,7 +197,7 @@ img_np = img_np / 255.0   # 정규화 (학습 데이터와 맞춰줘야 함)
 img_flat = img_np.reshape(1, -1)    # 1차원으로 변환
 
 new_pred = mymodel.predict(img_flat)
-print('실습1 예측 결과 : ', faces.target_names[new_pred[0]], ', index:', new_pred[0])   # George W Bush , index: 3
+print('실습2 예측 결과 : ', faces.target_names[new_pred[0]], ', index:', new_pred[0])   # George W Bush , index: 3
 
 # 시각화 + 예측
 plt.imshow(img_np, cmap='bone')
