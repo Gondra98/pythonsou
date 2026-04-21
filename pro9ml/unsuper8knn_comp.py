@@ -74,7 +74,3 @@ print(predict_label)
 print(f'군집 test acc : {np.mean(predict_label == test_y)}')    # 0.9473684210526315
 
 
-
-
-
-
