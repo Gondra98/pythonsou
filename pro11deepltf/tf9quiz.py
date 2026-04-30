@@ -103,3 +103,4 @@ new_pred2 = model2.predict(new_x, verbose=0)
 
 for i, h in enumerate(new_x.ravel()):
     print(f'아버지 키 {h}cm → Sequential: {new_pred1[i][0]:.2f}cm / Functional: {new_pred2[i][0]:.2f}cm')
+

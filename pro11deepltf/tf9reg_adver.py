@@ -119,4 +119,84 @@ func_model.compile(optimizer='adam', loss='mse', metrics=['mse'])
 history = func_model.fit(x_train, y_train, epochs=100, batch_size=32, verbose=2, validation_split=0.2)   # train data중 20%를 학습 중 검증용 사용
 
 ev_loss = func_model.evaluate(x_test, y_test, verbose=0)
-print('ev_loss : ', ev_loss)
+print('func_model ev_loss : ', ev_loss)
+
+
+# ============================================================
+# TensorBoard 설정
+# ============================================================
+import datetime
+from tensorflow.keras.callbacks import TensorBoard
+
+# 실행할 때마다 타임스탬프 폴더 생성 → 여러 실행 비교 가능
+log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+tb_callback = TensorBoard(
+    log_dir=log_dir,
+    histogram_freq=1,   # 에포크마다 가중치 히스토그램 기록
+    write_graph=True,   # 모델 그래프 기록
+)
+
+print(f'TensorBoard 로그 저장 경로: {log_dir}')
+
+# ============================================================
+# Functional API 모델 평가 및 예측
+# ============================================================
+from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
+
+# func_model에 TensorBoard 콜백 적용하여 재학습
+history2 = func_model.fit(
+    x_train, y_train,
+    epochs=100,
+    batch_size=32,
+    verbose=2,
+    validation_split=0.2,
+    callbacks=[tb_callback]   # TensorBoard 콜백 추가
+)
+
+ev_loss2 = func_model.evaluate(x_test, y_test, verbose=0)
+print('func_model ev_loss:', ev_loss2)
+
+# loss 시각화
+plt.figure(figsize=(8, 4))
+plt.plot(history2.history['loss'], label='train loss')
+plt.plot(history2.history['val_loss'], label='val loss')
+plt.title('Functional API - Training Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss (MSE)')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# 설명력
+pred2 = func_model.predict(x_test)
+print('func_model 설명력(R²):', r2_score(y_test, pred2))
+
+# 예측값 vs 실제값
+print('예측값:', pred2[:5].ravel())
+print('실제값:', y_test[:5].values.ravel())
+
+# ============================================================
+# Sequential 모델도 TensorBoard 적용 비교용
+# ============================================================
+log_dir_seq = "logs/sequential_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tb_seq = TensorBoard(log_dir=log_dir_seq, histogram_freq=1)
+
+history_seq = model.fit(
+    x_train, y_train,
+    epochs=100,
+    batch_size=32,
+    verbose=0,
+    validation_split=0.2,
+    callbacks=[tb_seq]
+)
+
+# ============================================================
+# TensorBoard 실행 안내
+# ============================================================
+print('\n===== TensorBoard 실행 방법 =====')
+print('터미널에서 아래 명령어 실행:')
+print('  tensorboard --logdir=logs')
+print('브라우저에서 접속: http://localhost:6006')
+print('=================================')
