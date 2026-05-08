@@ -92,5 +92,7 @@ plt.ylabel('true')
 plt.show()
 
 print('\n새로운 값으로 분류 예측')
-new_data = np.array([[1,0,0,1,1,0,0,1,1,1,1,0,0,4,1,0,1]], dtype='float32')
+new_data = np.array([[1,0,0,1,1,0,0,1,1,1,1,0,0,4,1,0]], dtype='float32')
 probs = model.predict(new_data)
+print('예측 확률 : ', probs)
+print('예측 클래스 : ', np.argmax(probs) + 1)  # +1로 원래 1~7 복원
