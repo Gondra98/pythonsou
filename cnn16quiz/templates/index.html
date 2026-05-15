@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이미지 분류 (MobileNetV2 Fine-tuning)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f4f0;
+      --card: #ffffff;
+      --border: #d8d8d0;
+      --text: #1a1a1a;
+      --sub: #888880;
+      --accent: #1a6bff;
+      --accent-light: #e8f0ff;
+      --success: #00a86b;
+      --bar-bg: #ebebeb;
+      --top1-bg: #e6f7f1;
+      --top1-border: #00a86b;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 560px;
+      padding: 36px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
+      color: var(--text);
+    }
+
+    /* ── 파일 업로드 ── */
+    .upload-section { margin-bottom: 24px; }
+    .upload-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .file-btn {
+      background: #f0f0ec;
+      border: none;
+      border-right: 1px solid var(--border);
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .file-btn:hover { background: #e4e4e0; }
+
+    .file-name {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: var(--sub);
+      font-family: 'IBM Plex Mono', monospace;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #fileInput { display: none; }
+
+    /* ── 미리보기 ── */
+    .preview-wrap {
+      display: none;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fafafa;
+      position: relative;
+    }
+
+    .preview-label {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: rgba(255,255,255,0.85);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    #previewImg {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      display: block;
+      padding: 40px 24px 20px;
+    }
+
+    /* ── 버튼 ── */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1459d6; }
+    .btn-primary:disabled {
+      background: #c0c8e0;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f0f0ec;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #e4e4e0; }
+
+    /* ── 결과 ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .result-section { display: none; }
+
+    .top1-banner {
+      background: var(--top1-bg);
+      border: 1px solid var(--top1-border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .top1-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--success);
+      background: #c8f0e0;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .top1-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--success);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .top5-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .top5-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 7px;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .top5-item:hover { background: #f2f2ee; }
+
+    .rank {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--sub);
+      width: 18px;
+      flex-shrink: 0;
+    }
+
+    .class-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.88rem;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .bar-wrap {
+      width: 120px;
+      height: 6px;
+      background: var(--bar-bg);
+      border-radius: 3px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    .top5-item:first-child .bar-fill { background: var(--success); }
+
+    .pct-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      background: #e8e8e4;
+      padding: 2px 7px;
+      border-radius: 4px;
+      min-width: 52px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .top5-item:first-child .pct-label {
+      background: #c8f0e0;
+      color: var(--success);
+    }
+
+    /* ── 로딩 ── */
+    .loading {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 0;
+      color: var(--sub);
+      font-size: 0.88rem;
+    }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      display: none;
+      color: #d04040;
+      font-size: 0.85rem;
+      padding: 12px 14px;
+      background: #fff0f0;
+      border: 1px solid #f0c0c0;
+      border-radius: 7px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>이미지 분류 (MobileNetV2 Fine-tuning)</h1>
+
+  <!-- 파일 선택 -->
+  <div class="upload-section">
+    <span class="upload-label">이미지 선택</span>
+    <div class="file-row">
+      <button class="file-btn" onclick="document.getElementById('fileInput').click()">파일 선택</button>
+      <span class="file-name" id="fileName">선택된 파일 없음</span>
+    </div>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <!-- 미리보기 -->
+  <div class="preview-wrap" id="previewWrap">
+    <span class="preview-label">미리보기</span>
+    <img id="previewImg" src="" alt="preview">
+  </div>
+
+  <!-- 버튼 -->
+  <div class="btn-row">
+    <button class="btn btn-primary" id="classifyBtn" disabled onclick="classify()">분류 요청</button>
+    <button class="btn btn-secondary" onclick="reset()">초기화</button>
+  </div>
+
+  <!-- 로딩 -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>분류 중...</span>
+  </div>
+
+  <!-- 에러 -->
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- 결과 -->
+  <div class="result-section" id="resultSection">
+    <hr class="divider">
+
+    <div class="top1-banner">
+      <span class="top1-badge">Top-1</span>
+      <span class="top1-name" id="top1Name"></span>
+    </div>
+
+    <div class="top5-list" id="top5List"></div>
+  </div>
+</div>
+
+<script>
+  let selectedFile = null;
+
+  // 파일 선택
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('classifyBtn').disabled = false;
+
+    // 미리보기
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('previewWrap').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+
+    // 이전 결과 숨기기
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+  });
+
+  // 분류 요청
+  async function classify() {
+    if (!selectedFile) return;
+
+    const btn = document.getElementById('classifyBtn');
+    const loading = document.getElementById('loading');
+    const resultSection = document.getElementById('resultSection');
+    const errorMsg = document.getElementById('errorMsg');
+
+    btn.disabled = true;
+    loading.style.display = 'flex';
+    resultSection.style.display = 'none';
+    errorMsg.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      const res = await axios.post('/classify', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const data = res.data;
+      // data = { top1: "kangaroo", top5: [["kangaroo", 99.93], ["rabbit", 0.02], ...] }
+
+      document.getElementById('top1Name').textContent = data.top1;
+
+      const top5List = document.getElementById('top5List');
+      top5List.innerHTML = '';
+      data.top5.forEach(([name, pct], i) => {
+        const item = document.createElement('div');
+        item.className = 'top5-item';
+        item.innerHTML = `
+          <span class="rank">${i + 1}.</span>
+          <span class="class-name">${name}</span>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${Math.min(pct, 100)}%"></div></div>
+          <span class="pct-label">${pct.toFixed(2)}%</span>
+        `;
+        top5List.appendChild(item);
+      });
+
+      resultSection.style.display = 'block';
+
+    } catch (err) {
+      errorMsg.textContent = '오류 발생: ' + (err.response?.data?.error || err.message);
+      errorMsg.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      loading.style.display = 'none';
+    }
+  }
+
+  // 초기화
+  function reset() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileName').textContent = '선택된 파일 없음';
+    document.getElementById('previewWrap').style.display = 'none';
+    document.getElementById('previewImg').src = '';
+    document.getElementById('classifyBtn').disabled = true;
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
