@@ -154,6 +154,10 @@ class SimpleLidarEnv(gym.Env):
         if self.render_mode == "human":
             print('현재 상태 : ', self._state)
 
+            if self.fig is None:
+                self.fig, self.ax = plt.subplots(figsize=(8, 6))
+                plt.ion()  # interactive mode (pause 사용 위해)
+
             ax = self.ax
             ax.clear()
             ax.set_xlim(0, WORLD_W)
@@ -172,7 +176,31 @@ class SimpleLidarEnv(gym.Env):
             # 에이전트 : 삼각형 형태로 그리기
             x, y, th = self._state
             L = 0.6     # 삼각형 길이(크기)
-        
+
+            tri = np.array([
+                [x + np.cos(th) * L,       y + np.sin(th) * L      ],
+                [x + np.cos(th + 2.5) * L, y + np.sin(th + 2.5) * L],
+                [x + np.cos(th - 2.5) * L, y + np.sin(th - 2.5) * L],
+                ])
+            
+            ax.fill(tri[:, 0], tri[:, 1], alpha=0.85, color='tab:blue', label='agent')
+
+            obs, angs = cast_lidar(x, y, th)    # 라이다 밤 시각화
+
+            for d, a in zip(obs, angs):
+                # 두 점을 연결하는 선 그리기
+                ax.plot([x, x + np.cos(a) * d], [y, y + np.sin(a) * d], lw=1, alpha=0.9)
+            ax.legend(loc='upper right')
+            plt.pause(0.001)        # frame 갱신. rander() 내에서 매번 그림이 다시 그려지게 확인
+
+                
+
+            def close(self):
+                if self.ifg is not None:
+                    plt.close(self.fig)
+                    self.fig = None
+                    self.ax = None
+
 
 
 if __name__ == '__main__':
